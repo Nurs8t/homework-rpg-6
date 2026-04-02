@@ -8,6 +8,7 @@ public class ActionQueue {
 
     public void enqueue(ActionCommand cmd) {
         // TODO: Add the command to the end of the queue.
+        queue.add(cmd);
     }
 
     public void undoLast() {
@@ -15,18 +16,30 @@ public class ActionQueue {
         // Design question: should cmd.undo() be called, or is it simply removed?
         // For this assignment: just remove the last entry from the queue.
         // Hint: List has a remove(int index) method — think about which index is "last".
+        if (!queue.isEmpty()) {
+            queue.remove(queue.size() - 1);   // simply removed — NOT executed
+        }
     }
 
     public void executeAll() {
         // TODO: Call execute() on every command in the queue, in order.
         // TODO: Clear the queue after all commands have run.
         // TODO: What should happen if the queue is empty?
+        if (queue.isEmpty()) return;
+        for (ActionCommand cmd : queue) {
+            cmd.execute();
+        }
+        queue.clear();
     }
 
     public List<String> getCommandDescriptions() {
         // TODO: Return a snapshot list of descriptions for all queued commands.
         // TODO: Use cmd.getDescription() for each command.
         // Note: the returned list must be independent — modifying it must not affect the queue.
-        return new ArrayList<>();
+        List<String> snapshot = new ArrayList<>();
+        for (ActionCommand cmd : queue) {
+            snapshot.add(cmd.getDescription());
+        }
+        return snapshot;
     }
 }
