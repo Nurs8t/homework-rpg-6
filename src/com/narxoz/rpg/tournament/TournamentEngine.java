@@ -42,26 +42,45 @@ public class TournamentEngine {
         //   new ArmorHandler(hero.getArmorValue())
         //   new HpHandler()
         // Chain them: dodge.setNext(block).setNext(armor).setNext(hp)
+        DefenseHandler dodge = new DodgeHandler(hero.getDodgeChance(), random.nextLong());
+        DefenseHandler block = new BlockHandler(hero.getBlockRating() / 100.0);
+        DefenseHandler armor = new ArmorHandler(hero.getArmorValue());
+        DefenseHandler hp    = new HpHandler();
+        dodge.setNext(block).setNext(armor).setNext(hp);
 
         // TODO: Create an ActionQueue (the invoker).
+        ActionQueue actionQueue = new ActionQueue();
 
         // TODO: Simulate rounds until hero or opponent is defeated (or maxRounds is reached).
         // Each round should:
         //   1) Increment round counter.
+        while (hero.isAlive() && opponent.isAlive() && round < maxRounds) {
+            round++;
         //   2) Enqueue hero actions: AttackCommand, HealCommand, DefendCommand.
         //      Use hero.getAttackPower() for AttackCommand, a fixed heal amount for HealCommand,
         //      and a small dodge boost for DefendCommand.
+            actionQueue.enqueue(new AttackCommand(opponent, hero.getAttackPower()));
+            actionQueue.enqueue(new HealCommand(hero, 21));
+            actionQueue.enqueue(new DefendCommand(hero, 0.05));
         //   3) Print the queued commands using actionQueue.getCommandDescriptions().
+            for (String desc : actionQueue.getCommandDescriptions()) {
+                result.addLine("[Round " + round + "][Queued] " + desc);
+            }
         //   4) Call actionQueue.executeAll() to run all hero actions.
+                actionQueue.executeAll();
         //   5) If the opponent is still alive: have the opponent attack the hero.
         //      Route the attack through the defense chain: defenseChain.handle(opponent.getAttackPower(), hero)
         //      Do NOT call hero.takeDamage() directly here.
+                if (opponent.isAlive()) {
+                    result.addLine("[Round " + round + "] " + opponent.getName() + " attacks for " + opponent.getAttackPower());
+                    dodge.handle(opponent.getAttackPower(), hero);
+                }
         //   6) Log round results (e.g. "[Round N] Opponent HP: X | Hero HP: Y").
         //   7) Add the log line to result.addLine(...).
+                result.addLine("[Round " + round + "] " + opponent.getName() + " HP: " + opponent.getHealth() + " | " + hero.getName() + " HP: " + hero.getHealth());
+        }
 
-        // TODO: After the loop, determine the winner.
-        //   result.setWinner(hero.isAlive() ? hero.getName() : opponent.getName());
-        result.setWinner("TODO");
+        result.setWinner(hero.isAlive() ? hero.getName() : opponent.getName());
         result.setRounds(round);
         return result;
     }
